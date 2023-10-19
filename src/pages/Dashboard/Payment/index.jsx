@@ -62,7 +62,7 @@ export default function Payment() {
       setListEnrollments(response.data)
     })
       .catch(err => {
-         alert(err.response.data);
+        alert(err.response.data);
       });
 
   }, []);
@@ -175,21 +175,21 @@ export default function Payment() {
                     <Prince>R$0.00</Prince>
                   </ListItemContainer>
 
-                  {temIsRemote && (
-                    <ListItemContainer
-                      onClick={() => withOrWithoutHotel("comHotel", difference)}
-                      selected={selectedHotelOption === "comHotel"}
-                    >
-                      <div>Com hotel</div>
-                      <Prince>
-                        {list.find(item => !item.isRemote && item.includesHotel)?.price ? (
-                          `R$${(difference / 100).toFixed(2)}`
-                        ) : (
-                          "Preço indisponível"
-                        )}
-                      </Prince>
-                    </ListItemContainer>
-                  )}
+
+                  <ListItemContainer
+                    onClick={() => withOrWithoutHotel("comHotel", difference)}
+                    selected={selectedHotelOption === "comHotel"}
+                  >
+                    <div>Com hotel</div>
+                    <Prince>
+                      {list.find(item => !item.isRemote && item.includesHotel)?.price ? (
+                        `R$${(difference / 100).toFixed(2)}`
+                      ) : (
+                        "Preço indisponível"
+                      )}
+                    </Prince>
+                  </ListItemContainer>
+                  
                 </Choices>
               </Adjust>
             )}
