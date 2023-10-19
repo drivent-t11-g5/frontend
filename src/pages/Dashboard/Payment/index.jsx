@@ -15,6 +15,7 @@ export default function Payment() {
   const [inpersonOnlinePrice, setInpersonOnlinePrice] = useState(0);
   const [priceWithHotelWithoutHotel, setPriceWithHotelWithoutHotel] = useState(0);
   const [difference, setDifference] = useState(0);
+  const [noHotel, setNohotel] = useState(0);
   const navigate = useNavigate();
   const token = useToken();
 
@@ -39,7 +40,7 @@ export default function Payment() {
 
       // preço do ticket sem hotel
       const noHotelPrice = response.data.find(item => !item.isRemote && !item.includesHotel)?.price || 0;
-
+      setNohotel(noHotelPrice)
       // diferença entre eles
       const difference = withHotelPrice - noHotelPrice;
       setDifference(difference);
@@ -61,7 +62,7 @@ export default function Payment() {
       setListEnrollments(response.data)
     })
       .catch(err => {
-        //     alert(err.response.data);
+        alert(err.response.data);
       });
 
   }, []);
@@ -112,8 +113,8 @@ export default function Payment() {
         </HomeContainerNot>
         <HomeContainerText>
           <h1>
-          Você precisa completar sua inscrição antes
-          de prosseguir pra escolha de ingresso
+            Você precisa completar sua inscrição antes
+            de prosseguir pra escolha de ingresso
           </h1>
         </HomeContainerText>
       </>
@@ -135,11 +136,11 @@ export default function Payment() {
               </Statement>
               <Choices>
                 <ListItemContainer
-                  onClick={() => onlineInPerson("presencial", difference)}
+                  onClick={() => onlineInPerson("presencial", noHotel)}
                   selected={selectedType === "presencial"}
                 >
                   <div>Presencial</div>
-                  <Prince>R${(difference / 100).toFixed(2)}</Prince>
+                  <Prince>R${(noHotel / 100).toFixed(2)}</Prince>
                 </ListItemContainer>
 
                 {temIsRemote && (
@@ -174,21 +175,21 @@ export default function Payment() {
                     <Prince>R$0.00</Prince>
                   </ListItemContainer>
 
-                  {temIsRemote && (
-                    <ListItemContainer
-                      onClick={() => withOrWithoutHotel("comHotel", (list.find(item => !item.isRemote && item.includesHotel).price))}
-                      selected={selectedHotelOption === "comHotel"}
-                    >
-                      <div>Com hotel</div>
-                      <Prince>
-                        {list.find(item => !item.isRemote && item.includesHotel)?.price ? (
-                          `R$${(list.find(item => !item.isRemote && item.includesHotel).price / 100).toFixed(2)}`
-                        ) : (
-                          "Preço indisponível"
-                        )}
-                      </Prince>
-                    </ListItemContainer>
-                  )}
+
+                  <ListItemContainer
+                    onClick={() => withOrWithoutHotel("comHotel", difference)}
+                    selected={selectedHotelOption === "comHotel"}
+                  >
+                    <div>Com hotel</div>
+                    <Prince>
+                      {list.find(item => !item.isRemote && item.includesHotel)?.price ? (
+                        `R$${(difference / 100).toFixed(2)}`
+                      ) : (
+                        "Preço indisponível"
+                      )}
+                    </Prince>
+                  </ListItemContainer>
+                  
                 </Choices>
               </Adjust>
             )}
@@ -234,8 +235,6 @@ const HomeContainerText = styled.div`
 const HomeContainerNot = styled.div`
 display: flex;
 flex-direction: column;
-//height: calc(100vh - 50px);
-
 
 h2 {
   display: flex;
