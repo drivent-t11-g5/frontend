@@ -62,7 +62,7 @@ export default function Payment() {
       setListEnrollments(response.data)
     })
       .catch(err => {
-        //     alert(err.response.data);
+         alert(err.response.data);
       });
 
   }, []);
@@ -235,8 +235,6 @@ const HomeContainerText = styled.div`
 const HomeContainerNot = styled.div`
 display: flex;
 flex-direction: column;
-//height: calc(100vh - 50px);
-
 
 h2 {
   display: flex;
