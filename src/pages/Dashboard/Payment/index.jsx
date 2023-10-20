@@ -15,6 +15,7 @@ export default function Payment() {
   const [inpersonOnlinePrice, setInpersonOnlinePrice] = useState(0);
   const [priceWithHotelWithoutHotel, setPriceWithHotelWithoutHotel] = useState(0);
   const [difference, setDifference] = useState(0);
+  const [selectedTicketId, setSelectedTicketId] = useState(null);
   const [noHotel, setNohotel] = useState(0);
   const navigate = useNavigate();
   const token = useToken();
@@ -67,13 +68,13 @@ export default function Payment() {
 
   }, []);
 
-
+  console.log(list)
 
   // verificando se a opção de online
   const temIsRemote = list.some(item => item.isRemote);
 
   // função que é acionada quando se é clicada em uma das opções online ou presencial
-  function onlineInPerson(type, value) {
+  function onlineInPerson(type, value, id) {
 
     //para mostrar as opções de com hotel sem hotel
     SetShowHotel(true);
@@ -89,6 +90,10 @@ export default function Payment() {
 
     // guarda o valor da oções escolhida se é online ou presencial
     setInpersonOnlinePrice(value);
+
+    // colocar o ticketId associado à opção selecionada
+    const selectedTicketId = findTicketId(type, selectedHotelOption);
+    setSelectedTicketId(selectedTicketId);
   };
 
   // função chamada toda vez que é selecionada um botão de sem ou com hotel
@@ -98,9 +103,47 @@ export default function Payment() {
     setSelectedHotelOption(option);
 
     // para guardar o valor da opção escolhida
-    setPriceWithHotelWithoutHotel(value)
+    setPriceWithHotelWithoutHotel(value);
 
+    // colocar o ticketId quando a opção de hotel é escolhida
+    const selectedTicketId = findTicketId(selectedType, option);
+    setSelectedTicketId(selectedTicketId);
   };
+
+  // encontrar o ticketId com base nas opções selecionadas
+  function findTicketId(type, hotelOption) {
+    const selectedTicket = list.find(item => {
+      const isMatchingType = (type === 'presencial' && !item.isRemote) || (type === 'online' && item.isRemote);
+      const isMatchingHotelOption = hotelOption === null || (hotelOption === 'comHotel' && item.includesHotel) || (hotelOption === 'semHotel' && !item.includesHotel);
+      return isMatchingType && isMatchingHotelOption;
+    });
+
+    return selectedTicket ? selectedTicket.id : null;
+  };
+
+  // essa função serve para quando a pessoa for reservar o ticke
+  function ticketChosen() {
+
+    const url = `${import.meta.env.VITE_API_URL}/tickets/`;
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
+
+    const data = {
+      ticketTypeId: selectedTicketId
+
+    };
+    const promise = axios.post(url, data, config);
+    promise.then(response => {
+      console.log("reservado")
+    })
+      .catch(err => {
+        alert(err.response.data);
+
+      });
+  }
 
   if (listEnrollments.length === 0) {
 
@@ -189,7 +232,7 @@ export default function Payment() {
                       )}
                     </Prince>
                   </ListItemContainer>
-                  
+
                 </Choices>
               </Adjust>
             )}
@@ -201,7 +244,7 @@ export default function Payment() {
                 </Statement>
                 <Choices>
                   <ListItemContainerPurchase
-                    onClick={() => console.log('pagar')}
+                    onClick={() => ticketChosen()}
                   >
                     <div>RESERVAR INGRESSO</div>
                   </ListItemContainerPurchase>
