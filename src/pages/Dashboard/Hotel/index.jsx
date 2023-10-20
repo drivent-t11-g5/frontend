@@ -205,7 +205,6 @@ export default function Hotel() {
     )
   }
 
-  // verifica se usuário poderia ver o conteúdo da página
   // if (ticket === undefined || ticket.status !== 'PAID') return (
   //   <>
   //     <TitleContainer><p>Escolha de hotel e quarto</p></TitleContainer>
