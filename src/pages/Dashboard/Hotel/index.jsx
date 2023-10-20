@@ -25,21 +25,8 @@ export default function Hotel() {
         Authorization: `Bearer ${token}`
       }
     };
-/*
-  if (status == 404) {
-    return(
-      <CointainerGeral>
-        <h1>Escolha de hotel e quarto</h1>
-      </CointainerGeral>
-    )
-  }
-  
-  */
 
-  useEffect(() => {
-
-    // pegando os tickets
-    
+  useEffect(() => {    
 
     const promise = axios.get(url, config);
     promise.then(response => {
