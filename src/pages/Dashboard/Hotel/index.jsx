@@ -1,25 +1,45 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { styled } from "styled-components";
+import styled from "styled-components";
+import RoomCard from "./RoomCard";
+import { useContext, useEffect, useRef, useState } from "react";
+import UserContext from "../../../contexts/UserContext";
+import { getTicket } from "../../../services/ticketApi";
+import Button from "../../../components/Form/Button";
+import { getRoomsByHotelId } from "../../../services/hotelApi";
 import useToken from "../../../hooks/useToken";
+import axios from "axios";
 
 export default function Hotel() {
+  const { userData } = useContext(UserContext);
+  const [ticket, setTicket] = useState(undefined);
+  // const [showContainer, setShowContainer] = useState(false);
+  // const [selectedRooms, setSelectedRooms] = useState([]);
   const [hotels, setHotels] = useState();
-  const [rooms, setrooms] = useState();
-  const [status, setStatus] = useState();
-  const [text, setText] = useState();
+  const [rooms, setRooms] = useState();
   const [state, setState] = useState([]);
   const [roomState, setRoomState] = useState([]);
   const token = useToken();
+
   const url = `${import.meta.env.VITE_API_URL}/hotels`;
-  const config = {
-    headers: {
-      Authorization: `Bearer ${token}`
-    }
-  };
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    };
+/*
+  if (status == 404) {
+    return(
+      <CointainerGeral>
+        <h1>Escolha de hotel e quarto</h1>
+      </CointainerGeral>
+    )
+  }
+  
+  */
 
   useEffect(() => {
 
+    // pegando os tickets
+    
 
     const promise = axios.get(url, config);
     promise.then(response => {
@@ -32,10 +52,20 @@ export default function Hotel() {
       setHotels(response.data);
     })
       .catch(err => {
-        setStatus(err.response.status);
-        setText(err.response.statusText);
         console.log(err.response);
       });
+
+    (async () => {
+
+      try {
+        const userTicket = await getTicket(userData.token);
+        setTicket(userTicket);
+      } catch (err) {
+        console.log(err);
+      }
+
+    })
+      ();
 
   }, []);
 
@@ -53,7 +83,7 @@ export default function Hotel() {
         newState.push(false);
       }
       setRoomState(newState);
-      setrooms(response.data.Rooms)
+      setRooms(response.data.Rooms)
     })
            .catch(err => console.log(err));
   }
@@ -124,17 +154,24 @@ export default function Hotel() {
     }
   }
 
-  if (status == 404) {
+  if (ticket === undefined || ticket.status !== 'PAID') {
     return(
       <CointainerGeral>
         <h1>Escolha de hotel e quarto</h1>
+        <CenteredContainer>
+        <ContainerTitle><p>Você precisa ter confirmado pagamento antes
+          de fazer a escolha de hospedagem</p></ContainerTitle>
+      </CenteredContainer>
       </CointainerGeral>
     )
-  }else if (status == 402 && text == 'Payment Required') {
+  } else if (!ticket.TicketType.includesHotel) {
     return(
       <CointainerGeral>
         <h1>Escolha de hotel e quarto</h1>
-        <h3>Você precisa ter confirmado pagamento antes de fazer a escolha de hospedagem</h3>
+        <CenteredContainer>
+        <ContainerTitle><p>Sua modalidade de ingresso não inclui hospedagem
+          Prossiga para a escolha de atividades</p></ContainerTitle>
+      </CenteredContainer>
       </CointainerGeral>
     )
   } else if (hotels){
@@ -167,7 +204,52 @@ export default function Hotel() {
       </CointainerGeral>
     )
   }
+
+  // verifica se usuário poderia ver o conteúdo da página
+  // if (ticket === undefined || ticket.status !== 'PAID') return (
+  //   <>
+  //     <TitleContainer><p>Escolha de hotel e quarto</p></TitleContainer>
+      // <CenteredContainer>
+      //   <ContainerTitle><p>Você precisa ter confirmado pagamento antes
+      //     de fazer a escolha de hospedagem</p></ContainerTitle>
+      // </CenteredContainer>
+  //   </>
+  // );
+
+  // if (!ticket.TicketType.includesHotel) return (
+  //   <>
+  //     <TitleContainer><p>Escolha de hotel e quarto</p></TitleContainer>
+  //     <CenteredContainer>
+        // <ContainerTitle><p>Sua modalidade de ingresso não inclui hospedagem
+        //   Prossiga para a escolha de atividades</p></ContainerTitle>
+  //     </CenteredContainer>
+  //   </>
+  // );
+
+  // return (
+  //   <>
+  //     <TitleContainer><p>Escolha de hotel e quarto</p></TitleContainer>
+
+  //     <Button onClick={() => { findRoomsFromHotel(1) }}>Simulando o clique num hotel</Button>
+
+  //     <RoomsMainContainer showContainer={showContainer}>
+  //       <p>Ótima pedida! Agora escolha seu quarto:</p>
+  //       <RoomsContainer>
+  //         {
+  //           rooms && rooms.map((room) => <RoomCard
+  //             selectedRooms={selectedRooms}
+  //             setSelectedRooms={setSelectedRooms}
+  //             availableBookings={room.availableBookings}
+  //             name={room.name}
+  //             capacity={room.capacity}
+  //             id={room.id} />)
+  //         }
+  //       </RoomsContainer>
+  //     </RoomsMainContainer>
+  //   </>
+  // );
 }
+
 
 const CointainerGeral = styled.div`
   font-family: "Roboto";
@@ -175,7 +257,6 @@ const CointainerGeral = styled.div`
     font-size: 34px;
     font-weight: 400;
     line-height: 40px;
-    letter-spacing: 0em;
     margin-bottom: 30px;
   }
   h2{
@@ -183,9 +264,7 @@ const CointainerGeral = styled.div`
     font-size: 20px;
     font-weight: 400;
     line-height: 23px;
-    letter-spacing: 0em;
     margin-bottom: 15px;
-
   }
   .roomContainer{
     margin-bottom: 30px;
@@ -210,6 +289,95 @@ const CointainerGeral = styled.div`
     cursor: pointer;
   }
 `
+// const RoomsMainContainer = styled.div`
+//   margin-left: 16px;
+//   width: calc(100% - 16px);
+//   display: ${(props) => { return (props.showContainer) ? "flex" : "none" }};
+//   flex-direction: column;
+//   justify-content: space-between;
+
+//   p {
+//     color: #8E8E8E;
+//     font-size: 20px;
+//     font-family: 'Roboto', sans-serif;
+//     line-height: 26px;
+//     margin-bottom: 30px;
+//   }
+// `;
+
+// const RoomsContainer = styled.div`
+//   width: 92%;
+//   display: grid;
+//   grid-template-columns: 190px 190px 190px 190px;
+//   gap: 15px;
+//   grid-gap: 10px 15px;
+// `;
+
+const ContainerTitle = styled.div`
+  width: 411px;
+  height: 46px;
+  margin-bottom: 35px;
+
+  p {
+    color: #8E8E8E;
+    font-size: 20px;
+    font-family: 'Roboto', sans-serif;
+    line-height: 26px;
+  }
+`;
+
+const CenteredContainer = styled.div`
+  height: calc(100% - 34px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  text-align: center;
+`;
+
+// const TitleContainer = styled.div`
+//   width: 100%;
+//   display: flex;
+//   justify-content: left;
+
+//   p {
+//     color: #000;
+//     font-size: 34px;
+//     font-family: 'Roboto', sans-serif;
+//     margin-bottom: 30px;
+//   }
+//   h2{
+//     color: #8E8E8E;
+//     font-size: 20px;
+//     font-weight: 400;
+//     line-height: 23px;
+//     letter-spacing: 0em;
+//     margin-bottom: 15px;
+
+//   }
+//   .roomContainer{
+//     margin-bottom: 30px;
+//     >div{
+//       display: flex;
+//       flex-wrap: wrap;
+//       gap: 10px;
+//     }
+//   }
+//   button {
+//     width: 182px;
+//     height: 37px;
+//     border: none;
+//     border-radius: 4px;
+//     background-color: #E0E0E0;
+//     font-family: "Roboto";
+//     box-shadow: 0px 2px 10px 0px #00000040;
+//     font-size: 14px;
+//     line-height: 16px;
+//     letter-spacing: 0em;
+//     text-align: center;
+//     cursor: pointer;
+//   }
+// `
 
 const DivRoom = styled.div`
   width: 190px;
@@ -271,4 +439,4 @@ const DivHotel = styled.div`
     line-height: 23px;
     letter-spacing: 0em;
     }
-`
+`;
