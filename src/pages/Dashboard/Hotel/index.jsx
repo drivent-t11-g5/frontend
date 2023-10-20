@@ -141,6 +141,25 @@ export default function Hotel() {
     }
   }
 
+  function AcomodationText({acomodation}){
+    let text = '';
+    const order = [];
+    if (acomodation.includes('Single')) order.push('Single');
+    if (acomodation.includes('Double')) order.push('Double')
+    if (acomodation.includes('Triple')) order.push('Triple');
+    for (let i=0; i<order.length; i++){
+      if (i!=0 && i+1==order.length){
+        text += ` e ${order[i]} `
+      } else if (i==0){
+        text += `${order[i]}`
+      } else {
+        text += `, ${order[i]} `
+      }
+    }
+    return <span>{text}</span>
+  }
+
+
   if (ticket === undefined || ticket.status !== 'PAID') {
     return(
       <CointainerGeral>
@@ -174,11 +193,13 @@ export default function Hotel() {
                   <DivHotel onClick={() => selectHotel(hotel.id, i)} state={state[i]}>
                     <img src={hotel.image}/>
                     <h3>{hotel.name}</h3>
-                    <div>
-                      <p className="title">Tipos de acomodação:</p>
+                    <div className="divInfo">
+                      <p>Tipos de acomodação:</p>
+                      <AcomodationText acomodation={hotel.acomodation}/>
                     </div>
-                    <div>
-                      <p className="title">Vagas disponíveis:</p>
+                    <div className="divInfo">
+                      <p>Vagas disponíveis:</p>
+                      <span>{hotel.availableBookings}</span>
                     </div>
                   </DivHotel>
                 )
@@ -394,11 +415,18 @@ const ContainerHotelsInfo = styled.div`
   flex-wrap: wrap;
   gap: 20px;
   margin-bottom: 30px;
-  .title{
-    font-size: 15px;
-    font-weight: 500;
-    line-height: 23px;
+  .divInfo{
+    line-height: 18px;
     letter-spacing: 0em;
+    p{
+      font-size: 15px;
+      font-weight: 500;
+    }
+    span{
+      font-size: 15px;
+      font-weight: 300;
+    }
+
   }
   img {
     width: 170px;
