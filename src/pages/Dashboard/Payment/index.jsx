@@ -372,7 +372,7 @@ export default function Payment() {
         </Header>
 
         <TransactionsContainer>
-          <ul>
+          <Ul>
             <Adjust>
               <Statement>
                 Primeiro, escolha sua modalidade de ingresso
@@ -383,7 +383,7 @@ export default function Payment() {
                   selected={selectedType === "presencial"}
                 >
                   <div>Presencial</div>
-                  <Prince>R${(noHotel / 100).toFixed(2)}</Prince>
+                  <Prince>R${(noHotel / 100).toFixed(0)}</Prince>
                 </ListItemContainer>
 
                 {temIsRemote && (
@@ -394,7 +394,7 @@ export default function Payment() {
                     <div>Online</div>
                     <Prince>
                       {list.find(item => item.isRemote)?.price ? (
-                        `R$${(list.find(item => item.isRemote).price / 100).toFixed(2)}`
+                        `R$${(list.find(item => item.isRemote).price / 100).toFixed(0)}`
                       ) : (
                         "Preço indisponível"
                       )}
@@ -426,7 +426,7 @@ export default function Payment() {
                     <div>Com hotel</div>
                     <Prince>
                       {list.find(item => !item.isRemote && item.includesHotel)?.price ? (
-                        `R$${(difference / 100).toFixed(2)}`
+                        `R$${(difference / 100).toFixed(0)}`
                       ) : (
                         "Preço indisponível"
                       )}
@@ -440,7 +440,7 @@ export default function Payment() {
             {(selectedType === 'online' || selectedHotelOption !== null) && (
               <Adjust>
                 <Statement>
-                  Fechado! O total ficou em R$ {((inpersonOnlinePrice + priceWithHotelWithoutHotel) / 100).toFixed(2)}. Agora é só confirmar:
+                  Fechado! O total ficou em R${((inpersonOnlinePrice + priceWithHotelWithoutHotel) / 100).toFixed(0)}. Agora é só confirmar:
                 </Statement>
                 <Choices>
                   <ListItemContainerPurchase
@@ -451,14 +451,18 @@ export default function Payment() {
                 </Choices>
               </Adjust>
             )}
-          </ul>
+          </Ul>
         </TransactionsContainer>
       </HomeContainer>
     )
   } else {
     return PaymentPage();
   }
-}
+};
+
+const Ul = styled.ul`
+   overflow: hidden;
+`
 
 const HomeContainerText = styled.div`
   height: calc(100vh - 300px);
@@ -541,7 +545,8 @@ const Adjust = styled.div``;
 const HomeContainer = styled.div`
 display: flex;
 flex-direction: column;
-height: calc(100vh - 50px);
+height: calc(83vh - 51px);
+overflow: hidden;
 `;
 
 const Header = styled.header`
