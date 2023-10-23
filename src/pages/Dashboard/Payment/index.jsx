@@ -1,10 +1,28 @@
-
 import axios from "axios";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import useToken from "../../../hooks/useToken";
 import styled from "styled-components";
-
+import { getTicket } from '../../../services/ticketApi';
+import { IoCheckmarkCircle } from "react-icons/io5";
+import { createPayment } from '../../../services/paymentApi';
+import Cards from 'react-credit-cards-2';
+import "react-credit-cards-2/dist/es/styles-compiled.css";
+import creditCardType from "credit-card-type";
+import {
+  ConfirmationContainer,
+  CreditCard,
+  CreditCardContainer,
+  Cvc,
+  Expiry,
+  ExpiryAndCvc,
+  Icon,
+  Inputs,
+  Message,
+  Number,
+  PaymentContainer,
+  Ticket
+} from './styled';
 
 export default function Payment() {
   const [list, setList] = useState([]);
@@ -19,7 +37,188 @@ export default function Payment() {
   const [noHotel, setNohotel] = useState(0);
   const navigate = useNavigate();
   const token = useToken();
+  const [ticket, setTicket] = useState(null);
+  const [form, setForm] = useState({
+    number: '',
+    name: '',
+    expiry: '',
+    cvc: '',
+    focus: '',
+  });
+  const [isLoading, setIsLoading] = useState(false);
 
+  async function retrieveTicket() {
+    try {
+      const ticket = await getTicket(token);
+      setTicket(ticket);
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
+  async function payTicket(event) {
+    event.preventDefault();
+    const cardData = {
+      number: form.number,
+      name: form.name.toUpperCase(),
+      expirationDate: form.expiry,
+      cvv: form.cvc,
+      issuer: creditCardType(form.number)[0]?.niceType,
+    };
+    const body = {
+      ticketId: ticket.id,
+      cardData,
+    }
+    setIsLoading(true);
+
+    try {
+      await createPayment(body, token);
+      const updatedTicket = { ...ticket, status: 'PAID' };
+      setTicket(updatedTicket);
+      setIsLoading(false);
+    } catch (error) {
+      console.log(error.message);
+      setIsLoading(false);
+    }
+  }
+
+  function handleForm(event) {
+    const { name, value } = event.target;
+    setForm({ ...form, [name]: value });
+  }
+
+  function handleInputFocus(event) {
+    const { name } = event.target;
+    setForm({ ...form, focus: name });
+  }
+
+  function PaymentPage() {
+    const { status } = ticket;
+    const { name, price } = ticket.TicketType;
+    const currencyConversion = 100; // currency values are saved on database as cents
+
+    function renderCreditCard() {
+      return (
+        <CreditCardContainer>
+          <form onSubmit={payTicket}>
+            <CreditCard>
+              <Cards
+                number={form.number}
+                name={form.name}
+                expiry={form.expiry}
+                cvc={form.cvc}
+                focused={form.focus}
+                locale={{ valid: 'Valido até' }}
+                placeholders={{ name: 'SEU NOME AQUI' }}
+              />
+              <Inputs>
+                <Number>
+                  <input
+                    name="number"
+                    type="text"
+                    placeholder="Número do cartão"
+                    minLength="14"
+                    maxLength="16"
+                    title="Informe os dígitos do cartão de crédito"
+                    value={form.number}
+                    onChange={handleForm}
+                    onFocus={handleInputFocus}
+                    disabled={isLoading}
+                    required
+                  />
+                  <p>e.g.: 49..., 51..., 36..., 37...</p>
+                </Number>
+                <input
+                  name="name"
+                  type="text"
+                  placeholder="Nome"
+                  minLength="2"
+                  maxLength="22"
+                  title="Informe o nome do titular do cartão de crédito"
+                  value={form.name}
+                  onChange={handleForm}
+                  onFocus={handleInputFocus}
+                  disabled={isLoading}
+                  required
+                />
+                <ExpiryAndCvc>
+                  <Expiry
+                    name="expiry"
+                    type="text"
+                    placeholder="Validade"
+                    minLength="3"
+                    maxLength="7"
+                    title="Informe a validade do cartão de crédito"
+                    value={form.expiry}
+                    onChange={handleForm}
+                    onFocus={handleInputFocus}
+                    disabled={isLoading}
+                    required
+                  />
+                  <Cvc
+                    name="cvc"
+                    type="text"
+                    placeholder="CVC"
+                    minLength="3"
+                    maxLength="3"
+                    title="Informe o código de segurança do cartão de crédito"
+                    value={form.cvc}
+                    onChange={handleForm}
+                    onFocus={handleInputFocus}
+                    disabled={isLoading}
+                    required
+                  />
+                </ExpiryAndCvc>
+              </Inputs>
+            </CreditCard>
+            <button
+              type="submit"
+              disabled={isLoading}
+            >
+              FINALIZAR PAGAMENTO
+            </button>
+          </form>
+        </CreditCardContainer>
+      );
+    }
+
+    function renderConfirmation() {
+      return (
+        <ConfirmationContainer>
+          <Icon>
+            <IoCheckmarkCircle />
+          </Icon>
+          <Message>
+            <h3>Pagamento confirmado!</h3>
+            <p>Prossiga para escolha de hospedagem e atividades</p>
+          </Message>
+        </ConfirmationContainer>
+      );
+    }
+
+    function renderPayment() {
+      return (
+        <PaymentContainer>
+          <h1>Ingresso e pagamento</h1>
+          <h2>Ingresso escolhido</h2>
+          <Ticket>
+            <h3>{name}</h3>
+            <p>
+              {(price / currencyConversion).toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                maximumFractionDigits: 0,
+              })}
+            </p>
+          </Ticket>
+          <h2>Pagamento</h2>
+          {status === 'RESERVED' ? renderCreditCard() : renderConfirmation()}
+        </PaymentContainer>
+      );
+    }
+
+    return renderPayment();
+  }
 
   useEffect(() => {
 
@@ -66,6 +265,7 @@ export default function Payment() {
         alert(err.response.data);
       });
 
+    retrieveTicket();
   }, []);
 
   console.log(list)
@@ -137,7 +337,7 @@ export default function Payment() {
     };
     const promise = axios.post(url, data, config);
     promise.then(response => {
-      console.log("reservado")
+      setTicket(response.data);
     })
       .catch(err => {
         alert(err.response.data);
@@ -163,7 +363,7 @@ export default function Payment() {
       </>
     )
 
-  } else {
+  } else if (!ticket) {
 
     return (
       <HomeContainer>
@@ -255,6 +455,8 @@ export default function Payment() {
         </TransactionsContainer>
       </HomeContainer>
     )
+  } else {
+    return PaymentPage();
   }
 }
 
