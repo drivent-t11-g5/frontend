@@ -474,7 +474,6 @@ const HomeContainerText = styled.div`
   font-size: 20px;
   font-weight: 400;
   line-height: 23px;
-  background-color: red;
   color: rgba(142, 142, 142, 1);
   h1 {
     width: 388px;
@@ -547,7 +546,6 @@ const HomeContainer = styled.div`
 display: flex;
 flex-direction: column;
 height: calc(83vh - 51px);
-//background-color: red;
 overflow: hidden;
 `;
 
