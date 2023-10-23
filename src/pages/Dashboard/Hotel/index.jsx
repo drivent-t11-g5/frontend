@@ -128,6 +128,13 @@ export default function Hotel() {
           </div>
         </div>
       )
+    } else if (state.includes(true)) {
+      return(
+        <div className="roomContainer">
+          <h2 >Ótima pedida! Agora escolha seu quarto:</h2>
+          <ContainerTitle><p>Carregando...</p></ContainerTitle>
+        </div>
+      )
     }
   }
 
