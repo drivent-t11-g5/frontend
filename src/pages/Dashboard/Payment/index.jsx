@@ -246,7 +246,7 @@ export default function Payment() {
       setDifference(difference);
     })
       .catch(err => {
-        alert(err.response.data);
+        //alert(err.response.data);
       });
 
     // pegando os tickets
@@ -262,7 +262,7 @@ export default function Payment() {
       setListEnrollments(response.data)
     })
       .catch(err => {
-        alert(err.response.data);
+        //alert(err.response.data);
       });
 
     retrieveTicket();

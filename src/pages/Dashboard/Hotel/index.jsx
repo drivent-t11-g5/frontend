@@ -128,6 +128,13 @@ export default function Hotel() {
           </div>
         </div>
       )
+    } else if (state.includes(true)) {
+      return(
+        <div className="roomContainer">
+          <h2 >Ótima pedida! Agora escolha seu quarto:</h2>
+          <ContainerTitle><p>Carregando...</p></ContainerTitle>
+        </div>
+      )
     }
   }
 
@@ -137,6 +144,39 @@ export default function Hotel() {
         <button>
           RESERVAR QUARTO
         </button>
+      )
+    }
+  }
+
+  function HotelInformation() {
+    if (hotels) {
+      return (
+        <ContainerHotelsInfo>
+            {
+              hotels.map((hotel, i) => {
+                return(
+                  <DivHotel onClick={() => selectHotel(hotel.id, i)} state={state[i]}>
+                    <img src={hotel.image}/>
+                    <h3>{hotel.name}</h3>
+                    <div className="divInfo">
+                      <p>Tipos de acomodação:</p>
+                      <AcomodationText acomodation={hotel.acomodation}/>
+                    </div>
+                    <div className="divInfo">
+                      <p>Vagas disponíveis:</p>
+                      <span>{hotel.availableBookings}</span>
+                    </div>
+                  </DivHotel>
+                )
+              })
+            }
+          </ContainerHotelsInfo>
+      )
+    } else {
+      return (
+        <CenteredContainer>
+         <ContainerTitle><p>Carregando...</p></ContainerTitle>
+     </CenteredContainer>
       )
     }
   }
@@ -180,38 +220,26 @@ export default function Hotel() {
       </CenteredContainer>
       </CointainerGeral>
     )
-  } else if (hotels){
+  } else{
     return(
       <CointainerGeral>
         <h1>Escolha de hotel e quarto</h1>
         <div>
           <h2>Primeiro, escolha seu hotel</h2>
-          <ContainerHotelsInfo>
-            {
-              hotels.map((hotel, i) => {
-                return(
-                  <DivHotel onClick={() => selectHotel(hotel.id, i)} state={state[i]}>
-                    <img src={hotel.image}/>
-                    <h3>{hotel.name}</h3>
-                    <div className="divInfo">
-                      <p>Tipos de acomodação:</p>
-                      <AcomodationText acomodation={hotel.acomodation}/>
-                    </div>
-                    <div className="divInfo">
-                      <p>Vagas disponíveis:</p>
-                      <span>{hotel.availableBookings}</span>
-                    </div>
-                  </DivHotel>
-                )
-              })
-            }
-          </ContainerHotelsInfo>
+          <HotelInformation />
           <RoomsContainer/>
         </div>
         <ReservaContainer />
       </CointainerGeral>
     )
-  }
+   } //else {
+  //   <CointainerGeral>
+  //       <h1>Escolha de hotel e quarto</h1>
+  //       <CenteredContainer>
+  //       <ContainerTitle><p>Carregando...</p></ContainerTitle>
+  //     </CenteredContainer>
+  //     </CointainerGeral>
+  // }
 
   // if (ticket === undefined || ticket.status !== 'PAID') return (
   //   <>
@@ -338,8 +366,8 @@ const CenteredContainer = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-
   text-align: center;
+  margin-top: 30%;
 `;
 
 // const TitleContainer = styled.div`
