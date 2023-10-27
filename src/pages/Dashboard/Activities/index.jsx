@@ -3,8 +3,9 @@ import { useEffect, useState } from "react";
 import useToken from "../../../hooks/useToken";
 import styled from "styled-components";
 import { parseISO, differenceInHours } from 'date-fns';
-import { CloseCircleOutlined } from '@ant-design/icons';
 import { BiLogIn } from "react-icons/bi";
+import { FiXCircle } from "react-icons/fi";
+
 import "react-credit-cards-2/dist/es/styles-compiled.css";
 
 
@@ -215,7 +216,7 @@ export default function Activities() {
                         <Statement7> </Statement7>
                         {main.availableSeats < 1 && (
                           <Vacancies style={{ color: 'red' }}>
-                            <CloseCircleOutlined style={{ fontSize: '24px', color: 'red', marginBottom: '5px' }} />
+                            <FiXCircle style={{ fontSize: '24px', color: 'red', marginBottom: '5px' }} />
                             <p>esgotado</p>
                           </Vacancies>
                         )}
@@ -240,7 +241,7 @@ export default function Activities() {
                         <Statement7> </Statement7>
                         {side.availableSeats < 1 && (
                           <Vacancies style={{ color: 'red' }}>
-                            <CloseCircleOutlined style={{ fontSize: '24px', color: 'red', marginBottom: '5px' }} />
+                            <FiXCircle style={{ fontSize: '24px', color: 'red', marginBottom: '5px' }} />
                             <p>esgotado</p>
                           </Vacancies>
                         )}
@@ -264,7 +265,7 @@ export default function Activities() {
                         <Statement7> </Statement7>
                         {workshop.availableSeats < 1 && (
                           <Vacancies style={{ color: 'red' }}>
-                            <CloseCircleOutlined style={{ fontSize: '24px', color: 'red', marginBottom: '5px' }} />
+                            <FiXCircle style={{ fontSize: '24px', color: 'red', marginBottom: '5px' }} />
                             <p>esgotado</p>
                           </Vacancies>
                         )}
