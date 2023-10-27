@@ -11,6 +11,7 @@ export default function Hotel() {
   const [hotel, setHotel] = useState('');
   const [hotels, setHotels] = useState();
   const [rooms, setRooms] = useState();
+  const [roomBooked, setRoomBooked] = useState("");
   const [state, setState] = useState([]);
   const [roomState, setRoomState] = useState([]);
   const [render, setRender] = useState(0);
@@ -27,11 +28,13 @@ export default function Hotel() {
   useEffect(() => {  
     const promise = axios.get(url, config);
     promise.then(response => {
-      const newState = [];
-      for (let i=0; i<response.data.length; i++){
-        newState.push(false)
+      if (state.length == 0){
+        const newState = [];
+        for (let i=0; i<response.data.length; i++){
+          newState.push(false)
+        }
+        setState(newState);
       }
-      setState(newState);
       setHotels(response.data);
     })
       .catch(err => {
@@ -110,7 +113,7 @@ export default function Hotel() {
           <h2 >Ótima pedida! Agora escolha seu quarto:</h2>
           <div>
           {rooms.map((room,i) => {
-            if (room.availableBookings==0){
+            if (room.availableBookings==0 || roomBooked == room.id){
               return(
                 <DivRoom available={false}>
                   {room.name}
@@ -174,20 +177,54 @@ export default function Hotel() {
         <ContainerHotelsInfo>
             {
               hotels.map((hotel, i) => {
-                return(
-                  <DivHotel onClick={() => selectHotel(hotel.id, i)} state={state[i]}>
-                    <img src={hotel.image}/>
-                    <h3>{hotel.name}</h3>
-                    <div className="divInfo">
-                      <p>Tipos de acomodação:</p>
-                      <AcomodationText acomodation={hotel.acomodation}/>
-                    </div>
-                    <div className="divInfo">
-                      <p>Vagas disponíveis:</p>
-                      <span>{hotel.availableBookings}</span>
-                    </div>
-                  </DivHotel>
-                )
+                if (booking != ""){
+                  if (state[i]) {
+                    return(
+                      <DivHotel state={state[i]}>
+                        <img src={hotel.image}/>
+                        <h3>{hotel.name}</h3>
+                        <div className="divInfo">
+                          <p>Tipos de acomodação:</p>
+                          <AcomodationText acomodation={hotel.acomodation}/>
+                        </div>
+                        <div className="divInfo">
+                          <p>Vagas disponíveis:</p>
+                          <span>{hotel.availableBookings}</span>
+                        </div>
+                      </DivHotel>
+                    )
+                  } else {
+                    return(
+                      <DivHotel available={true}>
+                        <img src={hotel.image}/>
+                        <h3>{hotel.name}</h3>
+                        <div className="divInfo">
+                          <p>Tipos de acomodação:</p>
+                          <AcomodationText acomodation={hotel.acomodation}/>
+                        </div>
+                        <div className="divInfo">
+                          <p>Vagas disponíveis:</p>
+                          <span>{hotel.availableBookings}</span>
+                        </div>
+                      </DivHotel>
+                    )
+                  }
+                } else {
+                  return(
+                    <DivHotel onClick={() => selectHotel(hotel.id, i)} state={state[i]}>
+                      <img src={hotel.image}/>
+                      <h3>{hotel.name}</h3>
+                      <div className="divInfo">
+                        <p>Tipos de acomodação:</p>
+                        <AcomodationText acomodation={hotel.acomodation}/>
+                      </div>
+                      <div className="divInfo">
+                        <p>Vagas disponíveis:</p>
+                        <span>{hotel.availableBookings}</span>
+                      </div>
+                    </DivHotel>
+                  )
+                }
               })
             }
           </ContainerHotelsInfo>
@@ -244,9 +281,13 @@ export default function Hotel() {
   }
 
   function trocarQuarto() {
-    setRooms(null);
-    setState([]);
-    setRoomState([]);
+    hotels.forEach((hotel, i) => {
+      if (hotel.id == booking.Room.hotelId){
+        selectHotel(hotel.id, i)
+      }
+    })
+    console.log(booking);
+    setRoomBooked(booking.Room.id)
     setBooking(booking.id);
     setRender(render+1);
   }
@@ -412,7 +453,8 @@ const DivHotel = styled.div`
     height: 100px;
     border-radius: 10px;
   }
-  cursor: pointer;
+  cursor: ${(props) => (!props.available ? 'pointer' : 'not-allowed')};
+  opacity: ${(props) => (props.available ? 0.5 : 1)};
   width: 196px;
   height: 264px;
   background-color: ${(props) => (props.state ? "rgba(255, 238, 210, 1)" : "#ddd")};
