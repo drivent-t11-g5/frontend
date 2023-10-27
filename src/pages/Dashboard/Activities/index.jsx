@@ -356,7 +356,7 @@ const Box = styled.div`
   flex-direction: row; 
 `
 
-const Statement7 = styled.p`
+const Statement7 = styled.div`
   width: 1px;
   height: 80%; 
   border: 1px solid rgba(215, 215, 215, 1);
@@ -367,7 +367,7 @@ const Statement7 = styled.p`
   flex: 0;
 `
 
-const Statement6 = styled.p`
+const Statement6 = styled.div`
 width: 864px;
 height: 1px;
 border: 1px solid rgba(215, 215, 215, 1);
@@ -375,7 +375,7 @@ background: rgba(215, 215, 215, 1);
 color: rgba(142, 142, 142, 1);
 `
 
-const Statement1 = styled.p`
+const Statement1 = styled.div`
 width: 864px;
 height: 1px;
 border: 1px solid rgba(215, 215, 215, 1);
@@ -384,7 +384,7 @@ margin-top: 15px;
 color: rgba(142, 142, 142, 1);
 `
 
-const Statement2 = styled.p`
+const Statement2 = styled.div`
 width: 1px;
 height: 392px;
 border: 1px solid rgba(215, 215, 215, 1);
@@ -393,7 +393,7 @@ color: rgba(142, 142, 142, 1);
 margin-right: 288px;
 `
 
-const Statement3 = styled.p`
+const Statement3 = styled.div`
 width: 1px;
 height: 392px;
 border: 1px solid rgba(215, 215, 215, 1);
@@ -402,7 +402,7 @@ color: rgba(142, 142, 142, 1);
 margin-right: 288px;
 `
 
-const Statement4 = styled.p`
+const Statement4 = styled.div`
 width: 1px;
 height: 392px;
 border: 1px solid rgba(215, 215, 215, 1);
@@ -411,7 +411,7 @@ color: rgba(142, 142, 142, 1);
 margin-right: 280px;
 `
 
-const Statement5 = styled.p`
+const Statement5 = styled.div`
 width: 1px;
 height: 392px;
 border: 1px solid rgba(215, 215, 215, 1);
