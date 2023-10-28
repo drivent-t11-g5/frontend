@@ -10,6 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@ant-design/icons": "^5.2.6",
     "@date-io/date-fns": "^2.17.0",
     "@mui/lab": "^5.0.0-alpha.148",
     "@mui/material": "^5.14.13",
@@ -21,6 +22,7 @@
     "axios": "^1.5.1",
     "credit-card-type": "^9.1.0",
     "date-fns": "^2.30.0",
+    "date-fns-tz": "^2.0.0",
     "dayjs": "^1.11.10",
     "file-saver": "^2.0.5",
     "html2canvas": "^1.4.1",

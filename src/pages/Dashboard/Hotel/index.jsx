@@ -1,22 +1,21 @@
 import styled from "styled-components";
-import RoomCard from "./RoomCard";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import UserContext from "../../../contexts/UserContext";
 import { getTicket } from "../../../services/ticketApi";
-import Button from "../../../components/Form/Button";
-import { getRoomsByHotelId } from "../../../services/hotelApi";
 import useToken from "../../../hooks/useToken";
 import axios from "axios";
 
 export default function Hotel() {
   const { userData } = useContext(UserContext);
   const [ticket, setTicket] = useState(undefined);
-  // const [showContainer, setShowContainer] = useState(false);
-  // const [selectedRooms, setSelectedRooms] = useState([]);
+  const [hotel, setHotel] = useState('');
   const [hotels, setHotels] = useState();
   const [rooms, setRooms] = useState();
+  const [roomBooked, setRoomBooked] = useState("");
   const [state, setState] = useState([]);
   const [roomState, setRoomState] = useState([]);
+  const [render, setRender] = useState(0);
+  const [booking, setBooking] = useState('')
   const token = useToken();
 
   const url = `${import.meta.env.VITE_API_URL}/hotels`;
@@ -26,21 +25,26 @@ export default function Hotel() {
       }
     };
 
-  useEffect(() => {    
-
+  useEffect(() => {  
     const promise = axios.get(url, config);
     promise.then(response => {
-      const newState = [];
-      for (let i=0; i<response.data.length; i++){
-        newState.push(false)
+      if (state.length == 0){
+        const newState = [];
+        for (let i=0; i<response.data.length; i++){
+          newState.push(false)
+        }
+        setState(newState);
       }
-      setState(newState);
-      console.log(response.data);
       setHotels(response.data);
     })
       .catch(err => {
         console.log(err.response);
       });
+    if (typeof booking != 'number'){
+      const promiseBooking = axios.get(`${import.meta.env.VITE_API_URL}/booking`, config)
+      promiseBooking.then(response => setBooking(response.data))
+                  .catch(error => console.log(error));
+    }
 
     (async () => {
 
@@ -54,7 +58,7 @@ export default function Hotel() {
     })
       ();
 
-  }, []);
+  }, [render]);
 
   function selectHotel(id, i) {
     const updateState = [];
@@ -109,7 +113,7 @@ export default function Hotel() {
           <h2 >Ótima pedida! Agora escolha seu quarto:</h2>
           <div>
           {rooms.map((room,i) => {
-            if (room.availableBookings==0){
+            if (room.availableBookings==0 || roomBooked == room.id){
               return(
                 <DivRoom available={false}>
                   {room.name}
@@ -138,10 +142,29 @@ export default function Hotel() {
     }
   }
 
+  function bookRoom(roomId) {
+    if (typeof booking != 'number'){
+      const promise = axios.post(`${import.meta.env.VITE_API_URL}/booking`, {roomId}, config);
+      promise.then(response => {
+        setRender(response);
+        setBooking(response.data);
+      })
+             .catch(error => console.log(error));
+    } else {
+      const promise = axios.put(`${import.meta.env.VITE_API_URL}/booking/${booking}`, {roomId}, config);
+      promise.then(response => {
+        setRender(response);
+        setBooking(response.data);
+      })
+             .catch(error => console.log(error));
+    }
+  }
+
   function ReservaContainer() {
     if (roomState.includes(true)){
+      const index = roomState.indexOf(true);
       return(
-        <button>
+        <button onClick={() => bookRoom(rooms[index].id)}>
           RESERVAR QUARTO
         </button>
       )
@@ -154,20 +177,54 @@ export default function Hotel() {
         <ContainerHotelsInfo>
             {
               hotels.map((hotel, i) => {
-                return(
-                  <DivHotel onClick={() => selectHotel(hotel.id, i)} state={state[i]}>
-                    <img src={hotel.image}/>
-                    <h3>{hotel.name}</h3>
-                    <div className="divInfo">
-                      <p>Tipos de acomodação:</p>
-                      <AcomodationText acomodation={hotel.acomodation}/>
-                    </div>
-                    <div className="divInfo">
-                      <p>Vagas disponíveis:</p>
-                      <span>{hotel.availableBookings}</span>
-                    </div>
-                  </DivHotel>
-                )
+                if (booking != ""){
+                  if (state[i]) {
+                    return(
+                      <DivHotel state={state[i]}>
+                        <img src={hotel.image}/>
+                        <h3>{hotel.name}</h3>
+                        <div className="divInfo">
+                          <p>Tipos de acomodação:</p>
+                          <AcomodationText acomodation={hotel.acomodation}/>
+                        </div>
+                        <div className="divInfo">
+                          <p>Vagas disponíveis:</p>
+                          <span>{hotel.availableBookings}</span>
+                        </div>
+                      </DivHotel>
+                    )
+                  } else {
+                    return(
+                      <DivHotel available={true}>
+                        <img src={hotel.image}/>
+                        <h3>{hotel.name}</h3>
+                        <div className="divInfo">
+                          <p>Tipos de acomodação:</p>
+                          <AcomodationText acomodation={hotel.acomodation}/>
+                        </div>
+                        <div className="divInfo">
+                          <p>Vagas disponíveis:</p>
+                          <span>{hotel.availableBookings}</span>
+                        </div>
+                      </DivHotel>
+                    )
+                  }
+                } else {
+                  return(
+                    <DivHotel onClick={() => selectHotel(hotel.id, i)} state={state[i]}>
+                      <img src={hotel.image}/>
+                      <h3>{hotel.name}</h3>
+                      <div className="divInfo">
+                        <p>Tipos de acomodação:</p>
+                        <AcomodationText acomodation={hotel.acomodation}/>
+                      </div>
+                      <div className="divInfo">
+                        <p>Vagas disponíveis:</p>
+                        <span>{hotel.availableBookings}</span>
+                      </div>
+                    </DivHotel>
+                  )
+                }
               })
             }
           </ContainerHotelsInfo>
@@ -199,6 +256,41 @@ export default function Hotel() {
     return <span>{text}</span>
   }
 
+  function HotelInformation2({info, hotel, roomId}){
+    if (info){
+      let text = `${info.name} `;
+      if (info.capacity == 1) text += '(Single)';
+      if (info.capacity == 2) text += '(Double)';
+      if (info.capacity == 3) text += '(Triple)';
+      return <span>{text}</span>
+    } else if (hotel){
+      let quantity = 0;
+      hotel.Rooms.forEach(room => {
+        if (room.id == roomId){
+          quantity = room.capacity - room.availableBookings-1;
+        }
+      })
+      if (quantity==0){
+        return <span>Somente você</span>
+      } else if (quantity==1) {
+        return <span>Você e mais {quantity} pessoa</span>
+      }else {
+        return <span>Você e mais {quantity} pessoas</span>
+      }
+    }
+  }
+
+  function trocarQuarto() {
+    hotels.forEach((hotel, i) => {
+      if (hotel.id == booking.Room.hotelId){
+        selectHotel(hotel.id, i)
+      }
+    })
+    console.log(booking);
+    setRoomBooked(booking.Room.id)
+    setBooking(booking.id);
+    setRender(render+1);
+  }
 
   if (ticket === undefined || ticket.status !== 'PAID') {
     return(
@@ -221,68 +313,45 @@ export default function Hotel() {
       </CointainerGeral>
     )
   } else{
-    return(
-      <CointainerGeral>
-        <h1>Escolha de hotel e quarto</h1>
-        <div>
-          <h2>Primeiro, escolha seu hotel</h2>
-          <HotelInformation />
-          <RoomsContainer/>
-        </div>
-        <ReservaContainer />
-      </CointainerGeral>
-    )
-   } //else {
-  //   <CointainerGeral>
-  //       <h1>Escolha de hotel e quarto</h1>
-  //       <CenteredContainer>
-  //       <ContainerTitle><p>Carregando...</p></ContainerTitle>
-  //     </CenteredContainer>
-  //     </CointainerGeral>
-  // }
-
-  // if (ticket === undefined || ticket.status !== 'PAID') return (
-  //   <>
-  //     <TitleContainer><p>Escolha de hotel e quarto</p></TitleContainer>
-      // <CenteredContainer>
-      //   <ContainerTitle><p>Você precisa ter confirmado pagamento antes
-      //     de fazer a escolha de hospedagem</p></ContainerTitle>
-      // </CenteredContainer>
-  //   </>
-  // );
-
-  // if (!ticket.TicketType.includesHotel) return (
-  //   <>
-  //     <TitleContainer><p>Escolha de hotel e quarto</p></TitleContainer>
-  //     <CenteredContainer>
-        // <ContainerTitle><p>Sua modalidade de ingresso não inclui hospedagem
-        //   Prossiga para a escolha de atividades</p></ContainerTitle>
-  //     </CenteredContainer>
-  //   </>
-  // );
-
-  // return (
-  //   <>
-  //     <TitleContainer><p>Escolha de hotel e quarto</p></TitleContainer>
-
-  //     <Button onClick={() => { findRoomsFromHotel(1) }}>Simulando o clique num hotel</Button>
-
-  //     <RoomsMainContainer showContainer={showContainer}>
-  //       <p>Ótima pedida! Agora escolha seu quarto:</p>
-  //       <RoomsContainer>
-  //         {
-  //           rooms && rooms.map((room) => <RoomCard
-  //             selectedRooms={selectedRooms}
-  //             setSelectedRooms={setSelectedRooms}
-  //             availableBookings={room.availableBookings}
-  //             name={room.name}
-  //             capacity={room.capacity}
-  //             id={room.id} />)
-  //         }
-  //       </RoomsContainer>
-  //     </RoomsMainContainer>
-  //   </>
-  // );
+    if (booking && typeof booking != 'number' && booking.Room){
+      const promise = axios.get(url+'/'+booking.Room.hotelId, config);
+      promise.then(response => setHotel(response.data))
+             .catch(error => console.log(error));
+      return(
+        <CointainerGeral>
+          <h1>Escolha de hotel e quarto</h1>
+          <div>
+            <h2>Você já escolheu seu quarto:</h2>
+            <DivHotel state={true}>
+              <img src={hotel.image}/>
+              <h3>{hotel.name}</h3>
+              <div className="divInfo">
+                <p>Quarto reservado</p>
+                <HotelInformation2 info={booking.Room}/>
+              </div>
+              <div className="divInfo">
+                <p>Pessoas no seu quarto</p>
+                <HotelInformation2 hotel={hotel} roomId={booking.Room.id} />
+              </div>
+            </DivHotel>
+          </div>
+          <button onClick={() => trocarQuarto()}>TROCAR DE QUARTO</button>
+        </CointainerGeral>
+      )
+    }else{
+      return(
+        <CointainerGeral>
+          <h1>Escolha de hotel e quarto</h1>
+          <div>
+            <h2>Primeiro, escolha seu hotel</h2>
+            <HotelInformation />
+            <RoomsContainer/>
+          </div>
+          <ReservaContainer />
+        </CointainerGeral>
+      )
+    }
+   } 
 }
 
 
@@ -324,29 +393,6 @@ const CointainerGeral = styled.div`
     cursor: pointer;
   }
 `
-// const RoomsMainContainer = styled.div`
-//   margin-left: 16px;
-//   width: calc(100% - 16px);
-//   display: ${(props) => { return (props.showContainer) ? "flex" : "none" }};
-//   flex-direction: column;
-//   justify-content: space-between;
-
-//   p {
-//     color: #8E8E8E;
-//     font-size: 20px;
-//     font-family: 'Roboto', sans-serif;
-//     line-height: 26px;
-//     margin-bottom: 30px;
-//   }
-// `;
-
-// const RoomsContainer = styled.div`
-//   width: 92%;
-//   display: grid;
-//   grid-template-columns: 190px 190px 190px 190px;
-//   gap: 15px;
-//   grid-gap: 10px 15px;
-// `;
 
 const ContainerTitle = styled.div`
   width: 411px;
@@ -369,50 +415,6 @@ const CenteredContainer = styled.div`
   text-align: center;
   margin-top: 30%;
 `;
-
-// const TitleContainer = styled.div`
-//   width: 100%;
-//   display: flex;
-//   justify-content: left;
-
-//   p {
-//     color: #000;
-//     font-size: 34px;
-//     font-family: 'Roboto', sans-serif;
-//     margin-bottom: 30px;
-//   }
-//   h2{
-//     color: #8E8E8E;
-//     font-size: 20px;
-//     font-weight: 400;
-//     line-height: 23px;
-//     letter-spacing: 0em;
-//     margin-bottom: 15px;
-
-//   }
-//   .roomContainer{
-//     margin-bottom: 30px;
-//     >div{
-//       display: flex;
-//       flex-wrap: wrap;
-//       gap: 10px;
-//     }
-//   }
-//   button {
-//     width: 182px;
-//     height: 37px;
-//     border: none;
-//     border-radius: 4px;
-//     background-color: #E0E0E0;
-//     font-family: "Roboto";
-//     box-shadow: 0px 2px 10px 0px #00000040;
-//     font-size: 14px;
-//     line-height: 16px;
-//     letter-spacing: 0em;
-//     text-align: center;
-//     cursor: pointer;
-//   }
-// `
 
 const DivRoom = styled.div`
   width: 190px;
@@ -442,7 +444,33 @@ const ContainerHotelsInfo = styled.div`
   display: flex;
   flex-wrap: wrap;
   gap: 20px;
-  margin-bottom: 30px;
+`
+
+const DivHotel = styled.div`
+ margin-bottom: 30px;
+  img {
+    width: 170px;
+    height: 100px;
+    border-radius: 10px;
+  }
+  cursor: ${(props) => (!props.available ? 'pointer' : 'not-allowed')};
+  opacity: ${(props) => (props.available ? 0.5 : 1)};
+  width: 196px;
+  height: 264px;
+  background-color: ${(props) => (props.state ? "rgba(255, 238, 210, 1)" : "#ddd")};
+  border-radius: 15px;
+  display: flex;
+  flex-direction: column;
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  h3{
+  font-size: 20px;
+  font-weight: 300;
+  line-height: 23px;
+  letter-spacing: 0em;
+  }
   .divInfo{
     line-height: 18px;
     letter-spacing: 0em;
@@ -456,29 +484,4 @@ const ContainerHotelsInfo = styled.div`
     }
 
   }
-  img {
-    width: 170px;
-    height: 100px;
-    border-radius: 10px;
-  }
-`
-
-const DivHotel = styled.div`
-  cursor: pointer;
-    width: 196px;
-    height: 264px;
-    background-color: ${(props) => (props.state ? "rgba(255, 238, 210, 1)" : "#ddd")};
-    border-radius: 15px;
-    display: flex;
-    flex-direction: column;
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    h3{
-    font-size: 20px;
-    font-weight: 300;
-    line-height: 23px;
-    letter-spacing: 0em;
-    }
 `;
