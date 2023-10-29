@@ -26,4 +26,16 @@ export const Row = styled.div`
   align-items: center;
   justify-content: flex-start;
   width: 100%;
+
+  p {
+    padding-top: 5px;
+  }
+`;
+
+export const Icon = styled.div`
+  display: flex;
+  justify-content: center; 
+  align-items: center; 
+  padding-right: 10px;
+  font-size: 25px;
 `;
