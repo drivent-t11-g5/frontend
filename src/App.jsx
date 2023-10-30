@@ -15,6 +15,7 @@ import Payment from './pages/Dashboard/Payment';
 import Hotel from './pages/Dashboard/Hotel';
 import Activities from './pages/Dashboard/Activities';
 import Certificate from './pages/Dashboard/Certificate';
+import Pdf from './pages/Dashboard/Certificate/Pdf';
 
 import { EventInfoProvider } from './contexts/EventInfoContext';
 import { UserProvider } from './contexts/UserContext';
@@ -32,6 +33,7 @@ export default function App() {
               <Route path="/" element={<Countdown />} />
               <Route path="/enroll" element={<Enroll />} />
               <Route path="/sign-in" element={<SignIn />} />
+              <Route path="/pdf" element={<Pdf />} />
 
               <Route
                 path="/dashboard"
